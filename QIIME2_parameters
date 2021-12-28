@@ -1,0 +1,245 @@
+# Data processing 
+
+shi7 --input ./ \
+--adaptor Nextera \
+--output /processed \
+--flash True \
+--allow_outies False \
+--filter_qual 36 \
+--trim_qual 34 \
+--combine_fasta False \
+--convert_fasta False \
+--min_overlap 280 \
+--max_overlap 300 \
+--filter_length 280
+
+#QIIME2 analyses parameters
+
+qiime tools import \
+--type "SampleData[SequencesWithQuality]" \
+--input-path manifest.csv \
+--output-path demux.qza \
+--input-format SingleEndFastqManifestPhred33
+
+
+qiime demux summarize \  
+--i-data demux.qza \ 
+--o-visualization demux.qzv
+
+
+qiime dada2 denoise-single \
+--i-demultiplexed-seqs demux.qza \
+--p-trim-left 0 \
+--p-trunc-len 280 \
+--o-table dada2-single-end-table.qza \
+--o-representative-sequences dada2-single-end-rep-seqs.qza \
+--o-denoising-stats dada2-single-end-stats.qza
+
+
+qiime metadata tabulate \
+--m-input-file dada2-single-end-stats.qza \
+--o-visualization dada2-single-end-stats.qzv
+
+
+qiime feature-table summarize \
+--i-table dada2-single-end-table.qza  \
+--o-visualization dada2-single-end-table.qzv  \
+--m-sample-metadata-file metadata.tsv
+
+
+qiime feature-table tabulate-seqs \
+--i-data dada2-single-end-rep-seqs.qza \
+--o-visualization dada2-single-end-rep-seqs.qzv
+
+
+qiime fragment-insertion sepp \
+--i-representative-sequences dada2-single-end-rep-seqs.qza \
+--i-reference-database sepp-refs-silva-128.qza \
+--p-threads 4 \
+--o-tree insertion-tree-silva-128.qza \
+--o-placements insertions-placements-silva-128.qza
+
+
+qiime fragment-insertion filter-features \
+--i-table dada2-single-end-table.qza \
+--i-tree insertion-tree-silva-128.qza \
+--o-filtered-table dada2-single-end-sepp-filtered-table.qza \
+--o-removed-table dada2-single-end-sepp-removed-table.qza 
+
+
+qiime feature-classifier classify-sklearn \
+--i-reads dada2-single-end-rep-seqs.qza \
+--i-classifier silva-138-99-515-806-nb-classifier.qza \
+--o-classification taxonomy-silva-138-515-806-nb.qza
+
+
+qiime metadata tabulate \
+--m-input-file taxonomy-silva-138-515-806-nb.qza \
+--m-input-file dada2-single-end-rep-seqs.qza \
+--o-visualization taxonomy-silva-138-515-806-nb.qzv
+
+
+qiime taxa barplot \
+--i-table dada2-single-end-table.qza \
+--i-taxonomy taxonomy-silva-138-515-806-nb.qza \
+--m-metadata-file metadata.tsv \
+--o-visualization taxa-silva-barplot.qzv
+
+
+#Removed decontam-identified feature/ASV (ID: 5ad0bdb355eee69fed1de03984625e ; Pseudomonas)
+
+qiime feature-table filter-features \
+--i-table dada2-single-end-sepp-filtered-table.qza \
+--m-metadata-file feature_to_keep.tsv \
+--o-filtered-table feature-id-filtered-table-exclude-pseudomonas-sepp-filtered.qza \
+
+
+#Removed Mitochondria and Chloroplast ASVs
+
+qiime taxa filter-table \
+--i-table feature-id-filtered-table-exclude-pseudomonas-sepp-filtered.qza \
+--i-taxonomy taxonomy-silva-138-515-806-nb.qza \
+--p-exclude mitochondria,chloroplast \
+--o-filtered-table table-no-mitochondria-no-chloroplast-no-contaminants-sepp-filtered.qza
+
+
+qiime feature-table summarize \
+--i-table table-no-mitochondria-no-chloroplast-no-contaminants-sepp-filtered.qza \
+--m-sample-metadata-file metadata.tsv \
+--o-visualization table-no-mitochondria-no-chloroplast-no-contaminants-sepp-filtered.qzv
+
+
+#To filter samples based on ITS data and retain only 17 samples
+
+qiime feature-table filter-samples \
+--i-table table-no-mitochondria-no-chloroplast-no-contaminants-sepp-filtered.qza \
+--m-metadata-file samples-to-keep.tsv \
+--o-filtered-table 17-samples-table-no-mitochondria-no-chloroplast-no-contaminants-sepp-filtered.qza
+
+
+qiime feature-table summarize \
+--i-table 17-samples-table-no-mitochondria-no-chloroplast-no-contaminants-sepp-filtered.qza  \
+--o-visualization 17-samples-table-no-mitochondria-no-chloroplast-no-contaminants-sepp-filtered.qzv  \
+--m-sample-metadata-file metadata_new.tsv
+
+
+qiime diversity alpha-rarefaction \
+--i-table 17-samples-table-no-mitochondria-no-chloroplast-no-contaminants-sepp-filtered.qza \
+--i-phylogeny insertion-tree-silva-128.qza --p-max-depth 1189 --m-metadata-file metadata_new.tsv \
+--o-visualization alph-rarefaction-17-samples-1189.qzv
+
+
+qiime taxa barplot \
+--i-table 17-samples-table-no-mitochondria-no-chloroplast-no-contaminants-sepp-filtered.qza \
+--i-taxonomy taxonomy-silva-138-515-806-nb.qza \
+--m-metadata-file metadata_new.tsv \
+--o-visualization silva-taxa-barplot-17-samples.qzv
+
+
+qiime diversity core-metrics-phylogenetic \
+--i-table 17-samples-table-no-mitochondria-no-chloroplast-no-contaminants-sepp-filtered.qza \
+--i-phylogeny insertion-tree-silva-128.qza \
+--p-sampling-depth 1189 \
+--m-metadata-file metadata_new.tsv \
+--output-dir core-metrics-results-1189
+
+
+qiime diversity alpha-group-significance \
+--i-alpha-diversity core-metrics-results-1189/shannon_vector.qza \
+--m-metadata-file metadata_new.tsv \
+--o-visualization core-metrics-results-1189/shannon-group-significance.qzv
+
+
+qiime diversity alpha-group-significance \
+--i-alpha-diversity core-metrics-results-1189/faith_pd_vector.qza \
+--m-metadata-file metadata_new.tsv \
+--o-visualization core-metrics-results-1189/faith-pd-group-significance.qzv
+
+
+qiime diversity alpha-group-significance \
+--i-alpha-diversity core-metrics-results-1189/evenness_vector.qza \
+--m-metadata-file metadata_new.tsv \
+--o-visualization core-metrics-results-1189/evenness-group-significance.qzv
+
+
+qiime diversity beta-group-significance \
+--i-distance-matrix core-metrics-results-1189/unweighted_unifrac_distance_matrix.qza \
+--m-metadata-file metadata_new.tsv \
+--m-metadata-column category \
+--p-pairwise \
+--o-visualization core-metrics-results-1189/unweighted-unifrac-category-significance.qzv
+
+
+qiime diversity beta-group-significance \
+--i-distance-matrix core-metrics-results-1189/weighted_unifrac_distance_matrix.qza \
+--m-metadata-file metadata_new.tsv \
+--m-metadata-column category \
+--p-pairwise \
+--o-visualization core-metrics-results-1189/weighted-unifrac-category-significance.qzv
+
+
+qiime emperor plot \
+--i-pcoa core-metrics-results-1189/unweighted_unifrac_pcoa_results.qza \
+--m-metadata-file metadata_new.tsv \
+--o-visualization core-metrics-results-1189/unweighted-unifrac-emperor.qzv
+
+
+qiime emperor plot \
+--i-pcoa core-metrics-results-1189/weighted_unifrac_pcoa_results.qza \
+--m-metadata-file metadata_new.tsv \
+--o-visualization core-metrics-results-1189/weighted-unifrac-emperor.qzv
+
+
+qiime emperor plot \
+--i-pcoa core-metrics-results-1189/weighted_unifrac_pcoa_results.qza \
+--m-metadata-file metadata_new.tsv \
+--o-visualization core-metrics-results-1189/weighted-unifrac-emperor.qzv
+
+
+qiime emperor plot \
+--i-pcoa core-metrics-results-1189/bray_curtis_pcoa_results.qza \
+--m-metadata-file metadata_new.tsv \
+--o-visualization core-metrics-results-1189/bray-curtis-emperor.qzv
+
+
+qiime emperor plot \
+--i-pcoa core-metrics-results-1189/jaccard_pcoa_results.qza \
+--m-metadata-file metadata_new.tsv \
+--o-visualization core-metrics-results-1189/jaccard-emperor.qzv
+
+#To extract relative abundance values of bacterial phyla
+
+conda activate qiime2-2021.2
+jupyter-notebook
+import dokdo
+import matplotlib.pyplot as plt
+%matplotlib inline
+import numpy as np
+np.random.seed(1)
+
+qzv_file = '/home/processed/silva-taxa-barplot-17-samples.qzv'
+fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(11, 5), gridspec_kw={'width_ratios': [9, 1]})
+
+dokdo.taxa_abundance_bar_plot(qzv_file,
+                              ax=ax1,
+                              level=2,
+                              count=10,
+                              csv_file='top_10_phyla_12-09-2021.csv')
+
+dokdo.taxa_abundance_bar_plot(qzv_file,
+                              ax=ax2,
+                              level=2,
+                              count=10,
+                              artist_kwargs=dict(legend_loc='upper left', legend_only=True))
+
+artist_kwargs = dict(ylog=True, ymin=0.009, ymax=200, show_legend=True)
+dokdo.taxa_abundance_box_plot(qzv_file,
+                              level=2,
+                              figsize=(10, 7),
+                              hue='category',
+                              size=3,
+                              count=5,
+                              pseudocount=True,
+                              add_datapoints=True,
+                              artist_kwargs=artist_kwargs,
+                              csv_file='top_04_phyla_12-09-2021.csv')

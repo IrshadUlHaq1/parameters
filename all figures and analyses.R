@@ -177,9 +177,8 @@ combind + plot_annotation(tag_levels = 'A') &
 ##
 ggsave("Supplementary_figure_1_alpha_diversity.tiff", width = 8.2, height = 9, compression="lzw", dpi = 600)
 
-### Analysis of Compositions of Microbiomes with Bias Correction (ANCOM-BC)
+### analysis of compositions of microbiomes with bias correction (ANCOM-BC)
 setwd("/home/irshad/Schilling_Project_075/processed/shi7_learning/fastqs_stitched/fastafiles/")
-
 ##Produce a phyloseq object
 physeq_ancombc<-qza_to_phyloseq(
   features="17-samples-table-no-mitochondria-no-chloroplast-no-contaminants-sepp-filtered.qza",
@@ -188,6 +187,8 @@ physeq_ancombc<-qza_to_phyloseq(
   metadata = "metadata_new.tsv"
 )
 physeq_ancombc
+                                               
+### ANCOM-BC analyses at the taxonomic level of 'phylum'                                              
 phylum_data = aggregate_taxa(physeq_ancombc, "Phylum")
 ancom_bc <- ancombc(phyloseq=phylum_data, formula = "category",
                     p_adj_method = "bonferroni", zero_cut = 0.90, lib_cut = 1000, 
@@ -245,8 +246,7 @@ p1 = ggplot(data = df_fig,
 p1
 ggsave("phylum_ancom_watefall.tiff", width = 3.5, height = 4.5, compression="lzw", dpi = 600)
 
-###
-
+## ANCOM-BC analyses at the taxonomic level of 'class'
 class_data = aggregate_taxa(physeq_ancombc, "Class")
 ancom_bc <- ancombc(phyloseq=class_data, formula = "category",
                     p_adj_method = "bonferroni", zero_cut = 0.90, lib_cut = 1000, 
@@ -305,7 +305,7 @@ p2
 ggsave("class_ancom_watefall.tiff", width = 3.5, height = 4.5, compression="lzw", dpi = 600)
 
 
-###
+## ANCOM-BC analyses at the taxonomic level of 'order'
 order_data = aggregate_taxa(physeq_ancombc, "Order")
 ancom_bc <- ancombc(phyloseq=order_data, formula = "category",
                     p_adj_method = "bonferroni", zero_cut = 0.90, lib_cut = 1000, 
@@ -363,7 +363,7 @@ p3
 ggsave("order_ancom_watefall.tiff", width = 6, height = 7, compression="lzw", dpi = 600)
 
 
-###
+## ANCOM-BC analyses at the taxonomic level of 'family'
 family_data = aggregate_taxa(physeq_ancombc, "Family")
 ancom_bc <- ancombc(phyloseq=family_data, formula = "category",
                     p_adj_method = "bonferroni", zero_cut = 0.90, lib_cut = 1000, 
@@ -424,7 +424,7 @@ p4
 ggsave("family_ancom_watefall.tiff", width = 9.5, height = 7, compression="lzw", dpi = 600)
 
 
-###
+## ANCOM-BC analyses at the taxonomic level of 'genus'
 genus_data = aggregate_taxa(physeq_ancombc, "Genus")
 ancom_bc <- ancombc(phyloseq=genus_data, formula = "category",
                     p_adj_method = "bonferroni", zero_cut = 0.90, lib_cut = 1000, 
@@ -480,7 +480,8 @@ p5 = ggplot(data = df_fig,
         axis.title.y = element_text(face = "bold.italic", size = 6))
 p5
 ggsave("genus_ancom_watefall.tiff", width = 6, height = 7, compression="lzw", dpi = 600)
-###
+
+### ANCOM-BC analyses at the taxonomic level of 'species'
 species_data = aggregate_taxa(physeq_ancombc, "Species")
 ancom_bc <- ancombc(phyloseq=species_data, formula = "category",
                     p_adj_method = "bonferroni", zero_cut = 0.90, lib_cut = 1000, 
@@ -497,13 +498,12 @@ ancom_res_df <- data.frame(
   diff_abn = unlist(ancom_bc$res$diff_abn))
 
 bonferroni_ancom <- ancom_res_df %>%
-  dplyr::filter(q_val < 0.05)
+dplyr::filter(q_val < 0.05)
 dim(bonferroni_ancom)
 bonferroni_ancom
 write_csv(bonferroni_ancom, "ancombc_output_species_level.csv")
 ###
 res = ancom_bc$res
-##
 ###
 samp_frac = ancom_bc$samp_frac
 samp_frac[is.na(samp_frac)] = 0 # Replace NA with 0
@@ -538,13 +538,13 @@ p6 = ggplot(data = df_fig,
 p6
 ggsave("species_ancom_watefall.tiff", width = 6, height = 7, compression="lzw", dpi = 600)
 ###
-suppl_fig <- p1+p2+p3
-suppl_fig + plot_annotation(tag_levels = 'A') &
+suppl_fig_2 <- p1+p2+p3
+suppl_fig_2 + plot_annotation(tag_levels = 'A') &
   theme(plot.tag = element_text(face="bold"))
 ggsave("supplementary_fig_2abc.tiff", width = 9.5, height = 5.8, compression="lzw", dpi = 600)
 
-suppl_figg <- p5+p6
-suppl_figg + plot_annotation(tag_levels = 'A') &
+suppl_fig_3 <- p5+p6
+suppl_fig_3 + plot_annotation(tag_levels = 'A') &
   theme(plot.tag = element_text(face="bold"))
 ggsave("supplementary_fig_3ab.tiff", width = 10.5, height = 8.5, compression="lzw", dpi = 600)
 
@@ -862,7 +862,7 @@ library(tidyverse)
 library(readxl)
 library(ggplot2)
 library(patchwork)
-setwd("/home/irshad/16S_rRNA_Analysis/Molly_data/")
+setwd("/home/processed/")
 
 wph <- read_xlsx("whiterot_pH.xlsx")
 wph
@@ -886,8 +886,7 @@ mean_difference
 ggplot(descriptives, aes(category, mean))+
   geom_col()+
   geom_errorbar(data = descriptives, mapping = aes(x = category, y = mean, ymin = mean - sd, ymax = mean + sd), size=0.5, color="black", width=.1) 
-
-
+                                               
 ###
 ggplot(indp_ttest, aes(category, pH))+
   geom_jitter(position = position_jitter(w=0.05, h=0.01))+
@@ -918,8 +917,8 @@ ph_plot <- ph_plot+
             aes(x=x, y=y, label="*"), size=3,
             inherit.aes = FALSE)
 ph_plot
-#
-#ggsave("pH.tiff", width = 4, height =4.5, compression="lzw", dpi = 600)
+ggsave("pH.tiff", width = 4, height =4.5, compression="lzw", dpi = 600)
+
 ###
 wl <- read_xlsx("white_rot_lignin.xlsx")
 wl
@@ -975,12 +974,12 @@ lignin_plot <- lignin_plot+
             inherit.aes = FALSE)
 
 lignin_plot
-
-#ggsave("lignin.tiff", width = 3, height =2.5, compression="lzw", dpi = 600)
-###
+ggsave("lignin.tiff", width = 3, height =2.5, compression="lzw", dpi = 600)
+                                               
+### Use patchwork to combine plots
 plots <- ph_plot + lignin_plot
 plots <- plots + plot_annotation(tag_levels = 'A') &
   theme(plot.tag = element_text(face="bold", size = 6))
 plots
-ggsave("/home/irshad/Schilling_Project_075/processed/shi7_learning/fastqs_stitched/fastafiles/figures/New_raw_data_figures/Figure_1_pH_lignin.tiff", width = 5, height =3, compression="lzw", dpi = 600)
-##
+ggsave("/home/processed/figures/Figure_1_pH_lignin.tiff", width = 5, height =3, compression="lzw", dpi = 600)
+#######

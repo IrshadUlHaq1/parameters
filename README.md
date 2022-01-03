@@ -1,1 +1,1 @@
-# QIIME2-parameters
+# parameters

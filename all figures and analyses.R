@@ -924,7 +924,7 @@ p6 = ggplot(data = df_fig,
 p6
 ggsave("species_ancom_watefall.tiff", width = 6, height = 7, compression="lzw", dpi = 600)
                                                
-### Supplementary figures 2 and 3
+### Supplementary figures 3 and 4
 suppl_fig_2 <- p1+p2+p3
 suppl_fig_2 + plot_annotation(tag_levels = 'A') &
   theme(plot.tag = element_text(face="bold"))

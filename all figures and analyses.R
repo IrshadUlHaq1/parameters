@@ -506,8 +506,47 @@ df.physeqtocontam <- data.frame(physeqtocontam.prev.pos=taxa_sums(physeqtocontam
 ggplot(df.physeqtocontam, aes(x=physeqtocontam.prev.neg, y=physeqtocontam.prev.pos, color=contaminant)) + geom_point()+
   xlab("Prevalence (Negative Controls)") + ylab("Prevalence (True Samples)")
 ###
+### Supplementary figure 1
+                                               
+metadata<-readr::read_tsv("metadata.tsv")
+SVs<-read_qza("dada2-single-end-table-sans-blanks_ITS1.qza")$data
+taxonomy<-read_qza("taxonomy-single-end_ITS1.qza")$data %>% parse_taxonomy()
+taxasums<-summarize_taxa(SVs, taxonomy)$Species
+its1<-taxa_barplot(taxasums, metadata, ntoplot = 2)+
+  theme(
+    axis.title = element_blank(),
+    axis.title.y = element_text(size =8, face = "bold"),
+    strip.text.x = element_blank(),
+    legend.text = element_text(size = 6, face = "italic"),
+    legend.position = "bottom",
+    legend.key.size = unit(0.3, 'cm'))
+its1
+ggsave("barplot_ITS1.pdf", height=5, width=9, device="pdf") 
 
-### Supplementary Figure 1: Alpha diversity visualization
+###
+metadata<-readr::read_tsv("metadata.tsv")
+SVs<-read_qza("dada2-single-end-table_ITS2-sans-blank.qza")$data
+taxonomy<-read_qza("taxonomy-single-end_ITS2.qza")$data %>% parse_taxonomy()
+taxasums<-summarize_taxa(SVs, taxonomy)$Species
+its2<-taxa_barplot(taxasums, metadata, ntoplot = 2)+
+  theme(
+    axis.title = element_blank(),
+    axis.title.y = element_text(size =8, face = "bold"),
+    strip.text.x = element_blank(),
+    legend.text = element_text(size = 6, face = "italic"),
+    legend.position = "bottom",
+    legend.key.size = unit(0.3, 'cm'))
+its2
+ggsave("barplot_ITS2.pdf", height=5, width=9, device="pdf")
+                                               
+##To combine plots                                              
+suppl_fig <-its1/its2 +
+  plot_annotation(tag_levels = 'A') &
+  theme(plot.tag = element_text(face="bold"))
+suppl_fig
+ggsave("supplementary_figure_1.pdf", height=8, width=9, device="pdf") 
+
+### Supplementary Figure 2: Alpha diversity visualization
 
 adp <- read_xlsx("alpha_diversity.xlsx")
 adp
@@ -581,9 +620,9 @@ p4
 combind <- (p1 + p2) / (p3 + p4)
 combind + plot_annotation(tag_levels = 'A') &
   theme(plot.tag = element_text(face="bold"))
-ggsave("Supplementary_figure_1_alpha_diversity.tiff", width = 8.2, height = 9, compression="lzw", dpi = 600)
+ggsave("Supplementary_figure_2_alpha_diversity.tiff", width = 8.2, height = 9, compression="lzw", dpi = 600)
 
-### Supplementary figures 2 and 3
+### Supplementary figures 3 and 4
 ### Analysis of compositions of microbiomes with bias correction (ANCOM-BC)
 ### Part of this code obtained from the vignette at https://bioconductor.org/packages/release/bioc/vignettes/ANCOMBC/inst/doc/ANCOMBC.html#ancombc-global-test-result
 
@@ -889,10 +928,10 @@ ggsave("species_ancom_watefall.tiff", width = 6, height = 7, compression="lzw", 
 suppl_fig_2 <- p1+p2+p3
 suppl_fig_2 + plot_annotation(tag_levels = 'A') &
   theme(plot.tag = element_text(face="bold"))
-ggsave("supplementary_fig_2abc.tiff", width = 9.5, height = 5.8, compression="lzw", dpi = 600)
+ggsave("supplementary_fig_3ABC.tiff", width = 9.5, height = 5.8, compression="lzw", dpi = 600)
 
 suppl_fig_3 <- p5+p6
 suppl_fig_3 + plot_annotation(tag_levels = 'A') &
   theme(plot.tag = element_text(face="bold"))
-ggsave("supplementary_fig_3ab.tiff", width = 10.5, height = 8.5, compression="lzw", dpi = 600)
+ggsave("supplementary_fig_4AB.tiff", width = 10.5, height = 8.5, compression="lzw", dpi = 600)
 ###

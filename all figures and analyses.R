@@ -925,13 +925,13 @@ p6
 ggsave("species_ancom_watefall.tiff", width = 6, height = 7, compression="lzw", dpi = 600)
                                                
 ### Supplementary figures 3 and 4
-suppl_fig_2 <- p1+p2+p3
-suppl_fig_2 + plot_annotation(tag_levels = 'A') &
+suppl_fig_3 <- p1+p2+p3
+suppl_fig_3 + plot_annotation(tag_levels = 'A') &
   theme(plot.tag = element_text(face="bold"))
 ggsave("supplementary_fig_3ABC.tiff", width = 9.5, height = 5.8, compression="lzw", dpi = 600)
 
-suppl_fig_3 <- p5+p6
-suppl_fig_3 + plot_annotation(tag_levels = 'A') &
+suppl_fig_4 <- p5+p6
+suppl_fig_4 + plot_annotation(tag_levels = 'A') &
   theme(plot.tag = element_text(face="bold"))
 ggsave("supplementary_fig_4AB.tiff", width = 10.5, height = 8.5, compression="lzw", dpi = 600)
 ###

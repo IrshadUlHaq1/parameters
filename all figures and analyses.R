@@ -131,16 +131,16 @@ unwe_2 <- uwunifrac$data$Vectors %>%
   select(SampleID, PC1, PC2) %>%
   left_join(metadata) %>%
   left_join(shannon) %>%
-  ggplot(aes(x=PC1, y=PC2, color=`Category`, size=shannon_entropy)) +
+  ggplot(aes(x=PC1, y=PC2, color=`category`, size=shannon_entropy)) +
   geom_point(alpha=0.4) +
   scale_shape_manual(values=c(16,1)) + 
-  scale_size_continuous(name="Shannon diversity") +
-  scale_color_discrete(name="Category")+
+  scale_size_continuous(name="Shannon entropy") +
+  scale_color_discrete(name="Fungal species")+
   theme_q2r()+
   theme(
-    axis.title.y = element_text(size = 8, face="bold"),
-    axis.text = element_text(size=6, face = "bold"),
-    axis.title.x = element_text(size = 8, face="bold"),
+    axis.title.y = element_text(size = 10, face="bold"),
+    axis.text = element_text(size=8, face = "bold", hjust = 0.7),
+    axis.title.x = element_text(size = 10, face="bold"),
     legend.position = "none")
 
 unwe_2
@@ -155,16 +155,16 @@ we_2 <- wunifrac$data$Vectors %>%
   select(SampleID, PC1, PC2) %>%
   left_join(metadata) %>%
   left_join(shannon) %>%
-  ggplot(aes(x=PC1, y=PC2, color=`Category`, size=shannon_entropy)) +
+  ggplot(aes(x=PC1, y=PC2, color=`category`, size=shannon_entropy)) +
   geom_point(alpha=0.4) + 
   scale_shape_manual(values=c(16,1)) + 
-  scale_size_continuous(name="Shannon diversity") +
-  scale_color_discrete(name="Category")+
+  scale_size_continuous(name="Shannon entropy") +
+  scale_color_discrete(name="Fungal species")+
   theme_q2r()+
   theme(
-    axis.title.y = element_text(size = 8, face="bold"),
-    axis.text = element_text(size=6, face = "bold"),
-    axis.title.x = element_text(size = 8, face="bold"),
+    axis.title.y = element_text(size = 10, face="bold"),
+    axis.text = element_text(size=8, face = "bold"),
+    axis.title.x = element_text(size = 10, face="bold"),
     legend.text = element_text(face = "italic", size = 6),
     legend.title = element_text(size = 8),
     legend.key.height = unit(0.1, "lines"))
@@ -407,7 +407,7 @@ descriptives_acido = acido %>% group_by(category) %>% summarise(mean = mean(rela
 descriptives_acido
 ###
 ### Figure 5: ANCOM-BC analyses at the taxonomic level of 'family'
-### Part of this code obtained from the vignette at https://bioconductor.org/packages/release/bioc/vignettes/ANCOMBC/inst/doc/ANCOMBC.html#ancombc-global-test-result
+### This code was obtained from the vignette at https://bioconductor.org/packages/release/bioc/vignettes/ANCOMBC/inst/doc/ANCOMBC.html#ancombc-global-test-result
 
 ##Produce a phyloseq object
 physeq_ancombc<-qza_to_phyloseq(
